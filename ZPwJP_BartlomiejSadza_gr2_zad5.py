@@ -10,6 +10,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
+from textblob import TextBlob
+
 
 # csv_url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00468/online_shoppers_intention.csv"
 
@@ -180,49 +182,83 @@ import time
 ####################################################################################################
 
 # zadanie D1 
-import requests
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
+def zadanieD1():
+    import requests
+    from bs4 import BeautifulSoup
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.chrome.service import Service
 
-import pandas as pd
-from datetime import datetime
-import time
+    import pandas as pd
+    from datetime import datetime
+    import time
 
-# Inicjalizacja przeglądarki
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-def get_flight_price(url, origin, destination, date):
-    # Załaduj stronę z wynikami lotów
-    driver.get(url)
-    time.sleep(3)  # Czas na załadowanie strony
+    def get_flight_price(url, origin, destination, date):
+        driver.get(url)
+        time.sleep(5) # zeby strona sie zaladowala
 
-    # Przykład pobierania danych z elementu na stronie (dostosuj selektory do konkretnej strony)
-    prices = []
-    try:
-        price_elements = driver.find_elements(By.CLASS_NAME, "price-class")  # Zamień "price-class" na odpowiedni selektor
-        for price_element in price_elements:
-            prices.append(price_element.text.strip())
-    except Exception as e:
-        print(f"Błąd pobierania cen: {e}")
-    
-    # Zapisanie cen z datą sprawdzenia
-    prices_data = [{"origin": origin, "destination": destination, "date_checked": datetime.now(), "price": price} for price in prices]
-    return prices_data
+        prices = []
+        try:
+            price_elements = driver.find_elements(By.CLASS_NAME, "price-class") 
+            for price_element in price_elements:
+                prices.append(price_element.text.strip())
+        except Exception as e:
+            print(f"Błąd pobierania cen: {e}")
+        
+        prices_data = [{"origin": origin, "destination": destination, "date_checked": datetime.now(), "price": price} for price in prices]
+        return prices_data
 
-# Parametry lotu
-url = "https://www.kayak.pl/"
-origin = "KRK"  # Lotnisko wylotu (np. Kraków)
-destination = "JFK"  # Lotnisko docelowe (np. Nowy Jork)
-date = "2024-11-15"
 
-# Pobranie i zapisanie danych
-prices_data = get_flight_price(url, origin, destination, date)
-df = pd.DataFrame(prices_data)
-file_name = f"flight_prices_{datetime.now().strftime('%Y%m%d')}.csv"
-df.to_csv(file_name, index=False)
-print(f"Ceny zapisano w pliku: {file_name}")
+    url = "https://www.kayak.pl/"
+    origin = "KRK"  
+    destination = "JFK"  
+    date = "2024-11-01"
 
-# Zamknij przeglądarkę
-driver.quit()
+
+    prices_data = get_flight_price(url, origin, destination, date)
+    df = pd.DataFrame(prices_data)
+    file_name = f"flight_prices_{datetime.now().strftime('%Y%m%d')}.csv"
+    df.to_csv(file_name, index=False)
+    print(f"Ceny zapisano w pliku: {file_name}")
+
+    driver.quit()
+
+
+def zadanieD2():
+    def get_movie_reviews(url):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        reviews = []
+        review_elements = soup.find_all('div', class_='text show-more__control')
+        for review_element in review_elements:
+            reviews.append(review_element.text.strip())
+
+        return reviews
+
+    def analyze_sentiment(reviews):
+        sentiments = []
+        for review in reviews:
+            blob = TextBlob(review)
+            sentiments.append(blob.sentiment.polarity)
+        return sentiments
+
+    def summarize_reviews(reviews, sentiments):
+        df = pd.DataFrame({
+            'Review': reviews,
+            'Sentiment': sentiments
+        })
+        average_sentiment = df['Sentiment'].mean()
+        return df, average_sentiment
+
+    url = "https://www.imdb.com/title/tt0111161/reviews"  # Skazani na Showshank :D
+    reviews = get_movie_reviews(url)
+    sentiments = analyze_sentiment(reviews)
+    df, average_sentiment = summarize_reviews(reviews, sentiments)
+
+    file_name = "movie_reviews.csv"
+    df.to_csv(file_name, index=False)
+    print(f"Recenzje zapisano w pliku: {file_name}")
+    print(f"Średnia ocena sentymentu: {average_sentiment}")
