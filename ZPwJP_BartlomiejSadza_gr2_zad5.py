@@ -128,33 +128,101 @@ import time
 # driver.quit()
 
 ####################################################################################################
+
+# Zadanie 6
+# Funkcja do pobierania nagłówków z danego URL i kategorii
+# def get_headlines(url, category, headers):
+#     response = requests.get(url, headers=headers)
+#     soup = BeautifulSoup(response.text, 'html.parser')
+    
+#     # Przykładowe selektory (dostosuj do konkretnej strony)
+#     headlines = soup.find_all('h3')  # Na przykład: wyszukujemy wszystkie nagłówki h3
+#     headlines_text = [headline.text.strip() for headline in headlines[:5]]  # Pobieramy pierwsze 5 nagłówków
+
+#     return [{"kategoria": category, "naglowek": headline} for headline in headlines_text]
+
+# # Przykładowe linki do stron z kategoriami sport i polityka (zmień na rzeczywiste URL-e serwisów)
+# sources = {
+#     "BBC Sport": ("https://www.bbc.com/sport", "sport"),
+#     "BBC Politics": ("https://www.bbc.com/news/politics", "polityka"),
+#     "CNN Sport": ("https://edition.cnn.com/sport", "sport"),
+#     "CNN Politics": ("https://edition.cnn.com/politics", "polityka"),
+#     "Onet Sport": ("https://sport.onet.pl", "sport"),
+#     "Onet Politics": ("https://wiadomosci.onet.pl/polityka", "polityka")
+# }
+
+# headers = {
+#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36"
+# }
+
+# # Pobieranie nagłówków z każdej strony i kategorii
+# all_headlines = []
+
+# for name, (url, category) in sources.items():
+#     try:
+#         headlines = get_headlines(url, category, headers)
+#         all_headlines.extend(headlines)
+#         print(f"Pobrano nagłówki z {name}")
+#     except Exception as e:
+#         print(f"Błąd przy pobieraniu danych z {name}: {e}")
+
+# # Organizacja danych w DataFrame i zapis do pliku CSV
+# df = pd.DataFrame(all_headlines)
+# df.set_index("kategoria", inplace=True)
+# print(df)
+
+# file_name = "naglowki.csv"
+# df.to_csv(file_name, index=False)
+
+# print("")
+# print(f"Zapisano nagłówki do pliku: {file_name}")
+
+####################################################################################################
+
+# zadanie D1 
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 
-url = "https://www.cortland.pl/iphone/"
-headers = {"User-Agent": "Mozilla/5.0"}
+import pandas as pd
+from datetime import datetime
+import time
 
-# Create a session
-session = requests.Session()
+# Inicjalizacja przeglądarki
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-# Define a retry strategy
-retry_strategy = Retry(
-    total=5,  # Number of retries
-    backoff_factor=1,  # Wait time between retries
-    status_forcelist=[429, 500, 502, 503, 504],  # Retry on these status codes
-    method_whitelist=["HEAD", "GET", "OPTIONS"]  # Retry for these methods
-)
+def get_flight_price(url, origin, destination, date):
+    # Załaduj stronę z wynikami lotów
+    driver.get(url)
+    time.sleep(3)  # Czas na załadowanie strony
 
-# Mount the retry strategy to the session
-adapter = HTTPAdapter(max_retries=retry_strategy)
-session.mount("https://", adapter)
-session.mount("http://", adapter)
+    # Przykład pobierania danych z elementu na stronie (dostosuj selektory do konkretnej strony)
+    prices = []
+    try:
+        price_elements = driver.find_elements(By.CLASS_NAME, "price-class")  # Zamień "price-class" na odpowiedni selektor
+        for price_element in price_elements:
+            prices.append(price_element.text.strip())
+    except Exception as e:
+        print(f"Błąd pobierania cen: {e}")
+    
+    # Zapisanie cen z datą sprawdzenia
+    prices_data = [{"origin": origin, "destination": destination, "date_checked": datetime.now(), "price": price} for price in prices]
+    return prices_data
 
-try:
-    response = session.get(url, headers=headers, timeout=10)  # Increase timeout
-    response.raise_for_status()  # Raise an exception for HTTP errors
-    prices = response.json()  # Assuming the response is in JSON format
-    print(prices)
-except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
+# Parametry lotu
+url = "https://www.kayak.pl/"
+origin = "KRK"  # Lotnisko wylotu (np. Kraków)
+destination = "JFK"  # Lotnisko docelowe (np. Nowy Jork)
+date = "2024-11-15"
+
+# Pobranie i zapisanie danych
+prices_data = get_flight_price(url, origin, destination, date)
+df = pd.DataFrame(prices_data)
+file_name = f"flight_prices_{datetime.now().strftime('%Y%m%d')}.csv"
+df.to_csv(file_name, index=False)
+print(f"Ceny zapisano w pliku: {file_name}")
+
+# Zamknij przeglądarkę
+driver.quit()
