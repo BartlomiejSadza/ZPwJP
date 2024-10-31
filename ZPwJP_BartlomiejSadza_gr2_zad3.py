@@ -120,7 +120,6 @@ def palindrom(word):
 
 
 def zadanie9(slowo):
-
     words = slowo.split()
     return map(palindrom, words)
 
@@ -131,7 +130,6 @@ words = ["level", "world", "radar", "python", "madam", "java", "civic"]
 
 
 def zadanie10(lista):
-
     filtered = list(filter(palindrom, lista))
     return list(map(lambda word: word.upper() if word in filtered else word, lista))
 

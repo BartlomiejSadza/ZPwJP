@@ -61,7 +61,6 @@ B = [[9, 8, 7], [6, 5, 4], [3, 2, 1]]
 
 
 def zadanie5(A, B):
-
     result = [
         [sum(A[i][k] * B[k][j] for k in range(3)) for j in range(3)] for i in range(3)
     ]
