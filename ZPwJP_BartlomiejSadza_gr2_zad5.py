@@ -454,4 +454,4 @@ def zadanieD5(team):
 
 
 # To było dla mnie mega trudne i czasochłonne, więc silnie wspierane przez AI.
-# Pozdrawiam
+# Pozdrawiam serdecznie 
