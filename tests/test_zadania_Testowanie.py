@@ -1,5 +1,7 @@
 import pytest
-from zadania_Testowanie import BankAccount, TaskManager, ReservationSystem
+from unittest.mock import patch, Mock
+import requests
+from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_user_data
 
 
 # zadanie 1
@@ -71,3 +73,123 @@ def test_deposit_negative_amount(bank_account):
 def test_withdraw_negative_amount(bank_account):
     with pytest.raises(ValueError, match="Wypłata musi być dodatnia"):
         bank_account.withdraw(-50)
+
+
+
+# Zadanie 5
+@pytest.fixture
+def calculator():
+    return Calculator()
+
+@pytest.mark.parametrize("a, b, expected", [
+    (1, 2, 3),
+    (-1, 1, 0),
+    (1.5, 2.5, 4.0)
+])
+def test_add(calculator, a, b, expected):
+    assert calculator.add(a, b) == expected
+
+@pytest.mark.parametrize("a, b, expected", [
+    (3, 2, 1),
+    (1, 1, 0),
+    (2.5, 1.5, 1.0)
+])
+def test_subtract(calculator, a, b, expected):
+    assert calculator.subtract(a, b) == expected
+
+@pytest.mark.parametrize("a, b, expected", [
+    (2, 3, 6),
+    (-1, 1, -1),
+    (1.5, 2, 3.0)
+])
+def test_multiply(calculator, a, b, expected):
+    assert calculator.multiply(a, b) == expected
+
+@pytest.mark.parametrize("a, b, expected", [
+    (6, 3, 2),
+    (1, 1, 1),
+    (2.5, 0.5, 5.0)
+])
+def test_divide(calculator, a, b, expected):
+    assert calculator.divide(a, b) == expected
+
+def test_divide_by_zero(calculator):
+    with pytest.raises(ValueError, match="Cannot divide by zero"):
+        calculator.divide(1, 0)
+
+
+# zadanie 6
+@pytest.mark.parametrize("name, email", [
+    ("John", "john@example.com"),
+    ("Jane", "jane@example.com")
+])
+def test_user_initialization(name, email):
+    user = User(name, email)
+    assert user.name == name
+    assert user.email == email
+
+@pytest.mark.parametrize("name, expected_greeting", [
+    ("John", "Hello, John!"),
+    ("Jane", "Hello, Jane!")
+])
+def test_user_greet(name, expected_greeting):
+    user = User(name, "test@example.com")
+    assert user.greet() == expected_greeting
+
+
+# zadanie 7
+@pytest.fixture
+def library():
+    return Library()
+
+@pytest.fixture
+def book():
+    return Book("Test Title", "Test Author", 2021)
+
+def test_add_book(library, book):
+    library.add_book(book)
+    assert library.find_book("Test Title") == book
+
+def test_find_book(library, book):
+    library.add_book(book)
+    found_book = library.find_book("Test Title")
+    assert found_book is not None
+    assert found_book.title == "Test Title"
+    assert found_book.author == "Test Author"
+    assert found_book.year == 2021
+
+def test_find_nonexistent_book(library):
+    assert library.find_book("Nonexistent Title") is None
+
+
+# zadanie 8
+@patch('zadania_Testowanie.requests.get')
+def test_fetch_user_data_success(mock_get):
+    mock_response = Mock()
+    expected_data = {'id': 1, 'name': 'John Doe', 'email': 'john@example.com'}
+    mock_response.json.return_value = expected_data
+    mock_response.status_code = 200
+    mock_get.return_value = mock_response
+
+    user_data = fetch_user_data(1)
+    assert user_data == expected_data
+
+@patch('zadania_Testowanie.requests.get')
+def test_fetch_user_data_connection_error(mock_get):
+    mock_get.side_effect = requests.ConnectionError
+
+    with pytest.raises(requests.ConnectionError):
+        fetch_user_data(1)
+
+@patch('zadania_Testowanie.requests.get')
+def test_fetch_user_data_incomplete_data(mock_get):
+    mock_response = Mock()
+    incomplete_data = {'id': 1, 'name': 'John Doe'}
+    mock_response.json.return_value = incomplete_data
+    mock_response.status_code = 200
+    mock_get.return_value = mock_response
+
+    user_data = fetch_user_data(1)
+    assert user_data == incomplete_data
+
+

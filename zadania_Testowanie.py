@@ -1,3 +1,4 @@
+import requests
 
 # Zadanie 1
 class TaskManager:
@@ -52,3 +53,54 @@ class BankAccount:
 
 
 # Zadanie 5
+class Calculator:
+    def add(self, a, b):
+        return a + b
+
+    def subtract(self, a, b):
+        return a - b
+
+    def multiply(self, a, b):
+        return a * b
+
+    def divide(self, a, b):
+        if b == 0:
+            raise ValueError("Cannot divide by zero")
+        return a / b
+
+# Zadanie 6
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+
+    def greet(self):
+        return f"Hello, {self.name}!"
+
+
+# Zadanie 7
+class Book:
+    def __init__(self, title, author, year):
+        self.title = title
+        self.author = author
+        self.year = year
+
+class Library:
+    def __init__(self):
+        self.books = []
+
+    def add_book(self, book):
+        self.books.append(book)
+
+    def find_book(self, title):
+        for book in self.books:
+            if book.title == title:
+                return book
+        return None
+
+
+#Zadanie 8
+def fetch_user_data(user_id):
+    response = requests.get(f"https://api.example.com/users/{user_id}")
+    response.raise_for_status()
+    return response.json()
