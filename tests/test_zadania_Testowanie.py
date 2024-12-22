@@ -1,8 +1,12 @@
+from typing import Literal
 import pytest
 from unittest.mock import patch, Mock
 import requests
 from hypothesis import given, strategies as st
-from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_user_data, aggregate_weather_data, is_sorted
+import aiohttp
+import asyncio
+from aioresponses import aioresponses
+from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_data, fetch_user_data, aggregate_weather_data, is_sorted
 
 
 # zadanie 1
@@ -53,25 +57,25 @@ def test_double_reservation(reservation_system: ReservationSystem):
 def bank_account():
     return BankAccount()
 
-def test_deposit(bank_account):
+def test_deposit(bank_account: BankAccount):
     bank_account.deposit(100)
     assert bank_account.balance == 100
 
-def test_withdraw(bank_account):
+def test_withdraw(bank_account: BankAccount):
     bank_account.deposit(100)
     bank_account.withdraw(50)
     assert bank_account.balance == 50
 
-def test_withdraw_insufficient(bank_account):
+def test_withdraw_insufficient(bank_account: BankAccount):
     bank_account.deposit(100)
     with pytest.raises(ValueError, match="Nie masz wystarczających środków"):
         bank_account.withdraw(150)
 
-def test_deposit_negative_amount(bank_account):
+def test_deposit_negative_amount(bank_account: BankAccount):
     with pytest.raises(ValueError, match="Wpłata musi być dodatnia xD"):
         bank_account.deposit(-50)
 
-def test_withdraw_negative_amount(bank_account):
+def test_withdraw_negative_amount(bank_account: BankAccount):
     with pytest.raises(ValueError, match="Wypłata musi być dodatnia"):
         bank_account.withdraw(-50)
 
@@ -87,7 +91,7 @@ def calculator():
     (-1, 1, 0),
     (1.5, 2.5, 4.0)
 ])
-def test_add(calculator, a, b, expected):
+def test_add(calculator: Calculator, a: float | Literal[1] | Literal[-1], b: float | Literal[2] | Literal[1], expected: float | Literal[3] | Literal[0]):
     assert calculator.add(a, b) == expected
 
 @pytest.mark.parametrize("a, b, expected", [
@@ -95,7 +99,7 @@ def test_add(calculator, a, b, expected):
     (1, 1, 0),
     (2.5, 1.5, 1.0)
 ])
-def test_subtract(calculator, a, b, expected):
+def test_subtract(calculator: Calculator, a: float | Literal[3] | Literal[1], b: float | Literal[2] | Literal[1], expected: float | Literal[1] | Literal[0]):
     assert calculator.subtract(a, b) == expected
 
 @pytest.mark.parametrize("a, b, expected", [
@@ -103,7 +107,7 @@ def test_subtract(calculator, a, b, expected):
     (-1, 1, -1),
     (1.5, 2, 3.0)
 ])
-def test_multiply(calculator, a, b, expected):
+def test_multiply(calculator: Calculator, a: float | Literal[2] | Literal[-1], b: Literal[3] | Literal[1] | Literal[2], expected: float | Literal[6] | Literal[-1]):
     assert calculator.multiply(a, b) == expected
 
 @pytest.mark.parametrize("a, b, expected", [
@@ -111,10 +115,10 @@ def test_multiply(calculator, a, b, expected):
     (1, 1, 1),
     (2.5, 0.5, 5.0)
 ])
-def test_divide(calculator, a, b, expected):
+def test_divide(calculator: Calculator, a: float | Literal[6] | Literal[1], b: float | Literal[3] | Literal[1], expected: float | Literal[2] | Literal[1]):
     assert calculator.divide(a, b) == expected
 
-def test_divide_by_zero(calculator):
+def test_divide_by_zero(calculator: Calculator):
     with pytest.raises(ValueError, match="Cannot divide by zero"):
         calculator.divide(1, 0)
 
@@ -124,7 +128,7 @@ def test_divide_by_zero(calculator):
     ("John", "john@example.com"),
     ("Jane", "jane@example.com")
 ])
-def test_user_initialization(name, email):
+def test_user_initialization(name: Literal['John'] | Literal['Jane'], email: Literal['john@example.com'] | Literal['jane@example.com']):
     user = User(name, email)
     assert user.name == name
     assert user.email == email
@@ -133,7 +137,7 @@ def test_user_initialization(name, email):
     ("John", "Hello, John!"),
     ("Jane", "Hello, Jane!")
 ])
-def test_user_greet(name, expected_greeting):
+def test_user_greet(name: Literal['John'] | Literal['Jane'], expected_greeting: Literal['Hello, John!'] | Literal['Hello, Jane!']):
     user = User(name, "test@example.com")
     assert user.greet() == expected_greeting
 
@@ -147,11 +151,11 @@ def library():
 def book():
     return Book("Test Title", "Test Author", 2021)
 
-def test_add_book(library, book):
+def test_add_book(library: Library, book: Book[str, str, int]):
     library.add_book(book)
     assert library.find_book("Test Title") == book
 
-def test_find_book(library, book):
+def test_find_book(library: Library, book: Book[str, str, int]):
     library.add_book(book)
     found_book = library.find_book("Test Title")
     assert found_book is not None
@@ -159,7 +163,7 @@ def test_find_book(library, book):
     assert found_book.author == "Test Author"
     assert found_book.year == 2021
 
-def test_find_nonexistent_book(library):
+def test_find_nonexistent_book(library: Library):
     assert library.find_book("Nonexistent Title") is None
 
 
@@ -244,3 +248,26 @@ def test_is_sorted_large_lists(lst):
 
 
 # Zadanie 11
+@pytest.mark.asyncio
+async def test_fetch_data_success():
+    url = "https://api.example.com/data"
+    expected_data = {"key": "value"}
+
+    with aioresponses() as m:
+        m.get(url, payload=expected_data)
+
+        data = await fetch_data(url)
+        assert data == expected_data
+
+@pytest.mark.asyncio
+async def test_fetch_data_timeout():
+    url = "https://api.example.com/data"
+
+    with aioresponses() as m:
+        m.get(url, exception=asyncio.TimeoutError)
+
+        with pytest.raises(asyncio.TimeoutError):
+            await fetch_data(url)
+
+
+# Zadanie 12 
