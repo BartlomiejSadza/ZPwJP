@@ -1,5 +1,5 @@
 import pytest
-from zadania_Testowanie import TaskManager, ReservationSystem
+from zadania_Testowanie import BankAccount, TaskManager, ReservationSystem
 
 
 # zadanie 1
@@ -7,7 +7,7 @@ from zadania_Testowanie import TaskManager, ReservationSystem
 def task_manager():
     return TaskManager()
 
-def test_add_mark_complete_remove_task(task_manager):
+def test_add_mark_complete_remove_task(task_manager: TaskManager):
     # Dodawanie tasku
     task_manager.add_task(1, "Test Task")
     assert 1 in task_manager.tasks
@@ -28,7 +28,7 @@ def test_add_mark_complete_remove_task(task_manager):
 def reservation_system():
     return ReservationSystem()
 
-def test_reserve_cancel_seat(reservation_system):
+def test_reserve_cancel_seat(reservation_system: ReservationSystem):
     #Rezerwacja miejsca 
     reservation_system.reserve_seat(1)
     assert reservation_system.is_seat_reserved(1)
@@ -37,7 +37,7 @@ def test_reserve_cancel_seat(reservation_system):
     reservation_system.cancel_reservation(1)
     assert not reservation_system.is_seat_reserved(1)
 
-def test_double_reservation(reservation_system):
+def test_double_reservation(reservation_system: ReservationSystem):
     reservation_system.reserve_seat(1)
     assert reservation_system.is_seat_reserved(1)
     
@@ -45,4 +45,29 @@ def test_double_reservation(reservation_system):
         reservation_system.reserve_seat(1)
 
 
-# Zadanie 3 
+# Zadanie 4
+@pytest.fixture
+def bank_account():
+    return BankAccount()
+
+def test_deposit(bank_account):
+    bank_account.deposit(100)
+    assert bank_account.balance == 100
+
+def test_withdraw(bank_account):
+    bank_account.deposit(100)
+    bank_account.withdraw(50)
+    assert bank_account.balance == 50
+
+def test_withdraw_insufficient(bank_account):
+    bank_account.deposit(100)
+    with pytest.raises(ValueError, match="Nie masz wystarczających środków"):
+        bank_account.withdraw(150)
+
+def test_deposit_negative_amount(bank_account):
+    with pytest.raises(ValueError, match="Wpłata musi być dodatnia xD"):
+        bank_account.deposit(-50)
+
+def test_withdraw_negative_amount(bank_account):
+    with pytest.raises(ValueError, match="Wypłata musi być dodatnia"):
+        bank_account.withdraw(-50)

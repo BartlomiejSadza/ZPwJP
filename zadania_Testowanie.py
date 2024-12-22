@@ -32,3 +32,23 @@ class ReservationSystem:
     def is_seat_reserved(self, seat_number):
         return self.reservations.get(seat_number, False)
     
+# Zadanie 4
+
+class BankAccount:
+    def __init__(self):
+        self.balance = 0
+
+    def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Wpłata musi być dodatnia xD")
+        self.balance += amount
+
+    def withdraw(self, amount):
+        if amount <= 0:
+            raise ValueError("Wypłata musi być dodatnia")
+        if amount > self.balance:
+            raise ValueError("Nie masz wystarczających środków")
+        self.balance -= amount
+
+
+# Zadanie 5
