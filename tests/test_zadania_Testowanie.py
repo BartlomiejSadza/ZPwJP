@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import patch, Mock
 import requests
-from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_user_data, aggregate_weather_data
+from hypothesis import given, strategies as st
+from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_user_data, aggregate_weather_data, is_sorted
 
 
 # zadanie 1
@@ -226,4 +227,20 @@ def test_aggregate_weather_data_fail(mock_get):
     assert weather_data['City2'] is None
 
 
-    
+# Zadanie 10
+@given(st.lists(st.integers()))
+def test_is_sorted_random_listz(lst):
+    sorted_lst = sorted(lst)
+    assert is_sorted(sorted_lst) 
+
+@given(st.lists(st.integers()))
+def test_is_sorted_unsorted_lists(lst):
+    assert is_sorted(lst) == (lst == sorted(lst))
+
+@given(st.lists(st.integers(), min_size=100, max_size=10000))
+def test_is_sorted_large_lists(lst):
+    sorted_lst = sorted(lst)
+    assert is_sorted(sorted_lst)
+
+
+# Zadanie 11

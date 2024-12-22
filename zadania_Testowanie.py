@@ -107,7 +107,6 @@ def fetch_user_data(user_id):
 
 
 # ZAdanie 9
-
 def aggregate_weather_data(cities):
     weather_data = {}
     for city in cities:
@@ -118,3 +117,11 @@ def aggregate_weather_data(cities):
         except requests.RequestException:
             weather_data[city] = None
     return weather_data
+
+
+# Zadanie 10
+def is_sorted(lst):
+    return all(lst[i] <= lst[i + 1] for i in range(len(lst) - 1))
+
+
+# Zadanie 11
