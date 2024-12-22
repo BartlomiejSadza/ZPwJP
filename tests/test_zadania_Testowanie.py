@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, Mock
 import requests
-from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_user_data
+from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_user_data, aggregate_weather_data
 
 
 # zadanie 1
@@ -193,3 +193,37 @@ def test_fetch_user_data_incomplete_data(mock_get):
     assert user_data == incomplete_data
 
 
+# Zadanie 9 
+@patch('zadania_Testowanie.requests.get')
+def test_aggregate_weather_data_success(mock_get):
+    mock_response = Mock()
+    expected_data = {"temperature": 20, "humidity": 50}
+    mock_response.json.return_value = expected_data
+    mock_response.status_code = 200
+    mock_get.return_value = mock_response
+
+    cities = ['City1', 'City2']
+    weather_data = aggregate_weather_data(cities)
+    assert weather_data['City1'] == expected_data
+    assert weather_data['City2'] == expected_data
+
+@patch('zadania_Testowanie.requests.get')
+def test_aggregate_weather_data_fail(mock_get):
+    def side_effect(url):
+        if "City1" in url:
+            mock_response = Mock()
+            mock_response.json.return_value = {"temperature": 20, "humidity": 50}
+            mock_response.status_code = 200
+            return mock_response
+        else:
+            raise requests.RequestException
+        
+    mock_get.side_effect = side_effect
+
+    cities = ['City1', 'City2']
+    weather_data = aggregate_weather_data(cities)
+    assert weather_data['City1'] == {"temperature": 20, "humidity": 50}
+    assert weather_data['City2'] is None
+
+
+    

@@ -104,3 +104,17 @@ def fetch_user_data(user_id):
     response = requests.get(f"https://api.example.com/users/{user_id}")
     response.raise_for_status()
     return response.json()
+
+
+# ZAdanie 9
+
+def aggregate_weather_data(cities):
+    weather_data = {}
+    for city in cities:
+        try:
+            response = requests.get(f"https://api.example.com/weather?city={city}")
+            response.raise_for_status()
+            weather_data[city] = response.json()
+        except requests.RequestException:
+            weather_data[city] = None
+    return weather_data
