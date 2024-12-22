@@ -6,7 +6,20 @@ from hypothesis import given, strategies as st
 import aiohttp
 import asyncio
 from aioresponses import aioresponses
-from zadania_Testowanie import BankAccount, Book, Calculator, Library, TaskManager, ReservationSystem, User, fetch_data, fetch_user_data, aggregate_weather_data, is_sorted
+from zadania_Testowanie import (
+    BankAccount,
+    Book,
+    Calculator,
+    Library,
+    TaskManager,
+    ReservationSystem,
+    User,
+    fetch_data,
+    fetch_user_data,
+    aggregate_weather_data,
+    is_sorted,
+    parallel_sum
+)
 
 
 # zadanie 1
@@ -271,3 +284,13 @@ async def test_fetch_data_timeout():
 
 
 # Zadanie 12 
+def test_parallel_sum():
+    data = list(range(100))
+    result = parallel_sum(data, 4)
+    assert result == sum(data)
+
+def test_parallel_sum_large():
+    data = list(range(100000))
+    result = parallel_sum(data, 8)
+    assert result == sum(data)
+    

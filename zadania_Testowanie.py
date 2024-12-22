@@ -1,6 +1,7 @@
 import requests
 import aiohttp
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 # Zadanie 1
 class TaskManager:
@@ -133,3 +134,22 @@ async def fetch_data(url):
             response.raise_for_status()
             return await response.json()
         
+
+# Zadanie 12 
+def parallel_sum(data, n_threads):
+    def chunked_sum(chunk):
+        return sum(chunk)
+
+    chunk_size = len(data) // n_threads
+    chunks = [data[i * chunk_size: (i + 1) * chunk_size] for i in range(n_threads)]
+
+    if len(data) % n_threads != 0:
+        chunks.append(data[n_threads * chunk_size:])
+
+    with ThreadPoolExecutor(max_workers=n_threads) as egzekutor:
+        results = egzekutor.map(chunked_sum, chunks)
+
+    return sum(results)
+
+
+# damn, te zadania mogłyby być osobnym projektem xD 
