@@ -9,24 +9,19 @@ def fetch_all_offers():
     offset = 0            # od którego rekordu startujemy
     chunk_size = 100      # ile ofert pobieramy na jeden request
     
-    while len(all_offers) < 500:
+    while len(all_offers) < 1000:
         params = {
             "currency": "pln",
-            "from": offset,       # kluczowy parametr dla offsetu
+            "from": offset,
             "itemsCount": 100,
             "orderBy": "DESC",
             "sortBy": "published"
         }
         
-        # (opcjonalnie) dodać headers / cookies, jeśli potrzeba autoryzacji
-        # headers = { "User-Agent": "...", "Cookie": "...", ... }
-        # response = requests.get(BASE_URL, params=params, headers=headers)
-        
         response = requests.get(BASE_URL, params=params)
         response.raise_for_status()
         
         data = response.json()
-        print(data["meta"]['next']['cursor']) # next cursor
         offers = data['data']
         all_offers.extend(offers)
         
@@ -47,8 +42,8 @@ def fetch_all_offers():
         # Drobny sleep, żeby nie walić requestami co milisekundę
         time.sleep(0.5)
     
-    # zwracamy albo 500, albo tyle ile faktycznie udało się pobrać
-    return all_offers[:500]
+    # zwracamy albo 1000, albo tyle ile faktycznie udało się pobrać
+    return all_offers[:1000]
 
 if __name__ == "__main__":
     offers = fetch_all_offers()
