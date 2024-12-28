@@ -1,15 +1,13 @@
-from scraping import data
+from scraping import fetch_all_offers
 import pandas as pd
 import json
 
+data = fetch_all_offers()
 print("Data type: ", type(data))
 
-# Normalize the JSON data without nested paths first
-df = pd.json_normalize(data['data'])
-
-# Extract first location for each job
-df['city'] = df['multilocation'].apply(lambda x: x[0]['city'] if x else None)
-df['street'] = df['multilocation'].apply(lambda x: x[0]['street'] if x else None)
+df = pd.json_normalize(data)
+print(df.columns)
+print(df.head(5))
 
 # Extract salary information
 salary_data = []
@@ -29,5 +27,5 @@ for idx, row in df.iterrows():
 df_salaries = pd.DataFrame(salary_data)
 
 # Basic statistics
-print("\nBasic Statistics:")
-print(df_salaries)
+# print("\nBasic Statistics:")
+print(df_salaries.head())

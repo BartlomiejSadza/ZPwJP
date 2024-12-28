@@ -9,7 +9,7 @@ def fetch_all_offers():
     offset = 0            # od którego rekordu startujemy
     chunk_size = 100      # ile ofert pobieramy na jeden request
     
-    while len(all_offers) < 1000:
+    while len(all_offers) < 100:
         params = {
             "currency": "pln",
             "from": offset,
@@ -42,8 +42,8 @@ def fetch_all_offers():
         # Drobny sleep, żeby nie walić requestami co milisekundę
         time.sleep(0.5)
     
-    # zwracamy albo 1000, albo tyle ile faktycznie udało się pobrać
-    return all_offers[:1000]
+    # zwracamy albo 100, albo tyle ile faktycznie udało się pobrać
+    return all_offers[:100]
 
 if __name__ == "__main__":
     offers = fetch_all_offers()
