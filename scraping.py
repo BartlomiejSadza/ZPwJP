@@ -1,20 +1,55 @@
 import requests
+import time
 
-url = "https://api.justjoin.it/v2/user-panel/offers/by-cursor"
-params = {
-    "currency": "pln",
-    "orderBy": "DESC",
-    "sortBy": "published"
-    # można dodać np. "cursor": "..." jeśli endpoint obsługuje paginację
-}
+BASE_URL = "https://api.justjoin.it/v2/user-panel/offers/by-cursor"
+# https://api.justjoin.it/v2/user-panel/offers/by-cursor?currency=pln&from=100&itemsCount=100&orderBy=DESC&sortBy=published
 
-headers = {
-    "User-Agent": "Mozilla/5.0",
-    # ewentualnie jeszcze Accept: "application/json", itp.
-}
+def fetch_all_offers():
+    all_offers = []
+    offset = 0            # od którego rekordu startujemy
+    chunk_size = 100      # ile ofert pobieramy na jeden request
+    
+    while len(all_offers) < 500:
+        params = {
+            "currency": "pln",
+            "from": offset,       # kluczowy parametr dla offsetu
+            "itemsCount": 100,
+            "orderBy": "DESC",
+            "sortBy": "published"
+        }
+        
+        # (opcjonalnie) dodać headers / cookies, jeśli potrzeba autoryzacji
+        # headers = { "User-Agent": "...", "Cookie": "...", ... }
+        # response = requests.get(BASE_URL, params=params, headers=headers)
+        
+        response = requests.get(BASE_URL, params=params)
+        response.raise_for_status()
+        
+        data = response.json()
+        print(data["meta"]['next']['cursor']) # next cursor
+        offers = data['data']
+        all_offers.extend(offers)
+        
+        meta = data['meta']
+        next_ = meta['next']        # np. {"cursor": 400, "itemsCount": 100}
+        next_offset = next_['cursor']   # kolejny offset (np. 400)
+        fetched_count = len(offers)
+        
+        print(f"Offset={offset}, pobrano {fetched_count} ofert. nextOffset={next_offset}")
 
-response = requests.get(url, params=params, headers=headers)
-response.raise_for_status()
+        # Jeśli API zwraca 0 ofert lub brak next_offset, to kończymy
+        if fetched_count == 0 or not next_offset:
+            break
+        
+        # Przechodzimy do kolejnej „strony”
+        offset = next_offset
+        
+        # Drobny sleep, żeby nie walić requestami co milisekundę
+        time.sleep(0.5)
+    
+    # zwracamy albo 500, albo tyle ile faktycznie udało się pobrać
+    return all_offers[:500]
 
-data = response.json()
-# print(data)
+if __name__ == "__main__":
+    offers = fetch_all_offers()
+    print(f"Łącznie pobrano {len(offers)} ofert.")
