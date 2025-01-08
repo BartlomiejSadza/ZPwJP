@@ -16,13 +16,12 @@ payload = {
     "location": "Kraków"
 }
 
-# Wysłanie zapytania POST
+
 try:
     response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload)
-    response.raise_for_status()  # Wykrywanie błędów HTTP
+    response.raise_for_status() 
     data = response.json()
 
-    # Wyświetlanie wyników
     print("Status:", response.status_code)
     print("Znalezione oferty pracy:")
     for job in data.get("jobs", []):
