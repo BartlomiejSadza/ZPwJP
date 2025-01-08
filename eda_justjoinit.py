@@ -9,7 +9,6 @@ df = pd.json_normalize(data)
 print(df.columns)
 print(df.head(5))
 
-# Extract salary information
 salary_data = []
 for idx, row in df.iterrows():
     for emp_type in row['employmentTypes']:
@@ -26,6 +25,4 @@ for idx, row in df.iterrows():
 
 df_salaries = pd.DataFrame(salary_data)
 
-# Basic statistics
-# print("\nBasic Statistics:")
 print(df_salaries.head())

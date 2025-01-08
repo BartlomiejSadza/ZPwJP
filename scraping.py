@@ -7,7 +7,7 @@ BASE_URL = "https://api.justjoin.it/v2/user-panel/offers/by-cursor"
 def fetch_all_offers():
     all_offers = []
     offset = 0            # od którego rekordu startujemy
-    chunk_size = 100      # ile ofert pobieramy na jeden request
+    chunk_size = 100     # ile ofert pobieramy na jeden request
     
     while len(all_offers) < 100:
         params = {
@@ -26,24 +26,22 @@ def fetch_all_offers():
         all_offers.extend(offers)
         
         meta = data['meta']
-        next_ = meta['next']        # np. {"cursor": 400, "itemsCount": 100}
-        next_offset = next_['cursor']   # kolejny offset (np. 400)
+        next_ = meta['next']   
+        next_offset = next_['cursor']
         fetched_count = len(offers)
         
         print(f"Offset={offset}, pobrano {fetched_count} ofert. nextOffset={next_offset}")
 
-        # Jeśli API zwraca 0 ofert lub brak next_offset, to kończymy
         if fetched_count == 0 or not next_offset:
             break
         
-        # Przechodzimy do kolejnej „strony”
         offset = next_offset
         
         # Drobny sleep, żeby nie walić requestami co milisekundę
         time.sleep(0.5)
     
     # zwracamy albo 100, albo tyle ile faktycznie udało się pobrać
-    return all_offers[:100]
+    return all_offers[:1000]
 
 if __name__ == "__main__":
     offers = fetch_all_offers()
