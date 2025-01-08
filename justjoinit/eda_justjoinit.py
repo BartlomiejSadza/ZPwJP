@@ -20,7 +20,12 @@ for idx, row in df.iterrows():
             'to': emp_type['to'],
             'currency': emp_type['currency'],
             'experienceLevel': row['experienceLevel'],
-            'workplaceType': row['workplaceType']
+            'workplaceType': row['workplaceType'],
+            'requiredSkills': row['requiredSkills'],
+            'niceToHaveSkills': row['niceToHaveSkills'],
+            'companyName': row['companyName'],
+            'remoteInterview': row['remoteInterview'],
+            'publishedAt': row['publishedAt']
         })
 
 df_salaries = pd.DataFrame(salary_data)

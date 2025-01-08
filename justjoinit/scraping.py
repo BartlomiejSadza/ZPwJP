@@ -41,8 +41,9 @@ def fetch_all_offers():
         time.sleep(0.5)
     
     # zwracamy albo 100, albo tyle ile faktycznie udało się pobrać
-    return all_offers[:1000]
+    return all_offers[:100]
 
 if __name__ == "__main__":
     offers = fetch_all_offers()
+    print(offers[0])
     print(f"Łącznie pobrano {len(offers)} ofert.")

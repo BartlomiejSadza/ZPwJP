@@ -21,12 +21,14 @@ try:
     response = requests.post(url, headers={"Content-Type": "application/json"}, json=payload)
     response.raise_for_status() 
     data = response.json()
-
+    
     print("Status:", response.status_code)
     print("Znalezione oferty pracy:")
     for job in data.get("jobs", []):
-        print(job)
+        print(job['snippet'])
         print("-" * 40)
 
 except requests.exceptions.RequestException as e:
     print(f"Błąd podczas wykonywania zapytania: {e}")
+    
+    
