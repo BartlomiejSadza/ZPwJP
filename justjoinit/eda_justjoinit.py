@@ -30,4 +30,9 @@ for idx, row in df.iterrows():
 
 df_salaries = pd.DataFrame(salary_data)
 
-print(df_salaries.head())
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
+
+print(df_salaries.head(1))
