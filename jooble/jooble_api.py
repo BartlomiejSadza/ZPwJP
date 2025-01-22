@@ -3,6 +3,7 @@ import pandas as pd
 import json
 from dotenv import load_dotenv
 import os
+from classes import JobOffer
 
 load_dotenv()
 HOST = 'https://pl.jooble.org'
@@ -28,21 +29,22 @@ try:
     
     jobs = []
     for job in data.get("jobs", []):
-        jobs.append({
-            'title': job.get('title'),
-            'location': job.get('location'),
-            'snippet': job.get('snippet'),
-            'salary': job.get('salary'),
-            'source': job.get('source'),
-            'type': job.get('type'),
-            'link': job.get('link'),
-            'company': job.get('company'),
-            'updated': job.get('updated'),
-            'id': job.get('id')
-        })
+        jobs.append(JobOffer(
+            title=job.get('title'),
+            location=job.get('location'),
+            snippet=job.get('snippet'),
+            salary=job.get('salary'),
+            source=job.get('source'),
+            type_=job.get('type'),
+            link=job.get('link'),
+            company=job.get('company'),
+            updated=job.get('updated'),
+            _id=job.get('id')
+        ))
         
-    df_jooble = pd.DataFrame(jobs)
-    print(df_jooble.head())
+    print('Szczegóły ofert:')
+    for job in jobs:
+        print(job.title)
 
 
 except requests.exceptions.RequestException as e:
